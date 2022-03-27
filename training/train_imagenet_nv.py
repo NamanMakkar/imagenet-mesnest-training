@@ -30,7 +30,8 @@ from meter import AverageMeter, NetworkMeter, TimeMeter
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-    parser.add_argument('data', metavar='DIR', help='path to dataset')
+    parser.add_argument('traindir', metavar='DIR', help='path to dataset')
+    parser.add_argument('valdir',metavar='DIR', help='path to valset')
     parser.add_argument('--phases', type=str,
                     help='Specify epoch order of data resize and learning rate schedule: [{"ep":0,"sz":128,"bs":64},{"ep":5,"lr":1e-2}]')
     # parser.add_argument('--save-dir', type=str, default=Path.cwd(), help='Directory to save logs and models.')
@@ -88,7 +89,7 @@ def main():
     tb.log('sizes/world', dist_utils.env_world_size())
 
     # need to index validation directory before we start counting the time
-    dataloader.sort_ar(args.data+'/validation')
+    #dataloader.sort_ar(args.data+'/validation')
     
     if args.distributed:
         log.console('Distributed initializing process group')
@@ -328,10 +329,10 @@ class DataManager():
         return phases
 
     def expand_directories(self, phase):
-        trndir = phase.get('trndir', '')
-        valdir = phase.get('valdir', trndir)
-        phase['trndir'] = args.data+trndir+'/train'
-        phase['valdir'] = args.data+valdir+'/validation'
+        #trndir = phase.get('trndir', '')
+        #valdir = phase.get('valdir', trndir)
+        phase['trndir'] = args.traindir
+        phase['valdir'] = args.valdir
 
     def preload_data(self, ep, sz, bs, trndir, valdir, **kwargs): # dummy ep var to prevent error
         if 'lr' in kwargs: del kwargs['lr'] # in case we mix schedule and data phases
