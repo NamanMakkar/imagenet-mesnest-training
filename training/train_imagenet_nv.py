@@ -30,8 +30,7 @@ from meter import AverageMeter, NetworkMeter, TimeMeter
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-    parser.add_argument('traindir', metavar='DIR', help='path to dataset')
-    parser.add_argument('valdir',metavar='DIR', help='path to valset')
+    parser.add_argument('data', metavar='DIR', help='path to dataset')
     parser.add_argument('--phases', type=str,
                     help='Specify epoch order of data resize and learning rate schedule: [{"ep":0,"sz":128,"bs":64},{"ep":5,"lr":1e-2}]')
     # parser.add_argument('--save-dir', type=str, default=Path.cwd(), help='Directory to save logs and models.')
@@ -331,8 +330,8 @@ class DataManager():
     def expand_directories(self, phase):
         #trndir = phase.get('trndir', '')
         #valdir = phase.get('valdir', trndir)
-        phase['trndir'] = args.traindir
-        phase['valdir'] = args.valdir
+        phase['trndir'] = "/home/ubuntu/train/ILSVRC2012_img_train"
+        phase['valdir'] = "/home/ubuntu/validation/ILSVRC2012_img_val"
 
     def preload_data(self, ep, sz, bs, trndir, valdir, **kwargs): # dummy ep var to prevent error
         if 'lr' in kwargs: del kwargs['lr'] # in case we mix schedule and data phases
