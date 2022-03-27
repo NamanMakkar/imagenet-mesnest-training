@@ -4,6 +4,40 @@ import math
 import torch.nn as nn
 import torch.nn.functional as F
 
+class Mish_func(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, i):
+        result = i * torch.tanh(F.softplus(i))
+        ctx.save_for_backward(i)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        i = ctx.saved_tensors[0]
+  
+        v = 1. + i.exp()
+        h = v.log() 
+        grad_gh = 1./h.cosh().pow_(2) 
+
+        # Note that grad_hv * grad_vx = sigmoid(x)
+        #grad_hv = 1./v  
+        #grad_vx = i.exp()
+        grad_hx = i.sigmoid()
+
+        grad_gx = grad_gh *  grad_hx #grad_hv * grad_vx 
+        
+        grad_f =  torch.tanh(F.softplus(i)) + i * grad_gx 
+        
+        return grad_output * grad_f 
+
+
+class Mish(nn.Module):
+    def __init__(self, **kwargs):
+        super().__init__()
+        pass
+    def forward(self, input_tensor):
+        return Mish_func.apply(input_tensor)
+
 def _make_divisible(v, divisor, min_value=None):
     """
     This function is taken from the original tf repo.
@@ -64,7 +98,7 @@ def channel_shuffle(x, groups):
 class SplitAttn(nn.Module):
     def __init__(self, c1, c2=None, kernel_size=3, stride=1, padding=None,
                  dilation=1, groups=1, bias=False, radix=2, rd_ratio=0.25, rd_channels=None, rd_divisor=8,
-                 act_layer=nn.SiLU, norm_layer=None, drop_block=None, **kwargs):
+                 act_layer=Mish, norm_layer=None, drop_block=None, **kwargs):
         super(SplitAttn, self).__init__()
         c2 = c2 or c1
         self.radix = radix
@@ -159,40 +193,6 @@ class LayerNorm(nn.Module):
             x = (x - u) / torch.sqrt(s + self.eps)
             x = self.weight[:, None, None] * x + self.bias[:, None, None]
             return x
-
-class Mish_func(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, i):
-        result = i * torch.tanh(F.softplus(i))
-        ctx.save_for_backward(i)
-        return result
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        i = ctx.saved_tensors[0]
-  
-        v = 1. + i.exp()
-        h = v.log() 
-        grad_gh = 1./h.cosh().pow_(2) 
-
-        # Note that grad_hv * grad_vx = sigmoid(x)
-        #grad_hv = 1./v  
-        #grad_vx = i.exp()
-        grad_hx = i.sigmoid()
-
-        grad_gx = grad_gh *  grad_hx #grad_hv * grad_vx 
-        
-        grad_f =  torch.tanh(F.softplus(i)) + i * grad_gx 
-        
-        return grad_output * grad_f 
-
-
-class Mish(nn.Module):
-    def __init__(self, **kwargs):
-        super().__init__()
-        pass
-    def forward(self, input_tensor):
-        return Mish_func.apply(input_tensor)
 
 class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
