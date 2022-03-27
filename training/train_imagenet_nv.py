@@ -100,7 +100,7 @@ def main():
 
     log.console("Loading model")
     #model = resnet.resnet50(bn0=args.init_bn0).cuda()
-    model = mesnest.mesnest_s().cuda()
+    model = mesnest.mesnest_m().cuda()
     if args.fp16: model = network_to_half(model)
     if args.distributed: model = dist_utils.DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
     best_top5 = 97 # only save models over 93%. Otherwise it stops to save every time
