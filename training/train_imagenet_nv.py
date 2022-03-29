@@ -103,7 +103,7 @@ def main():
     model = mesnest.mesnest_m().cuda()
     if args.fp16: model = network_to_half(model)
     if args.distributed: model = dist_utils.DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
-    best_top5 = 97 # only save models over 93%. Otherwise it stops to save every time
+    best_top5 = 99 # only save models over 93%. Otherwise it stops to save every time
 
     global model_params, master_params
     if args.fp16: model_params, master_params = prep_param_lists(model)
@@ -330,8 +330,8 @@ class DataManager():
     def expand_directories(self, phase):
         #trndir = phase.get('trndir', '')
         #valdir = phase.get('valdir', trndir)
-        phase['trndir'] = "/home/ubuntu/train/ILSVRC2012_img_train"
-        phase['valdir'] = "/home/ubuntu/validation/ILSVRC2012_img_val"
+        phase['trndir'] = "/home/ubuntu/imagenet-mesnest-training-main/cifar100-128/train"
+        phase['valdir'] = "/home/ubuntu/imagenet-mesnest-training-main/cifar100-128/val"
 
     def preload_data(self, ep, sz, bs, trndir, valdir, **kwargs): # dummy ep var to prevent error
         if 'lr' in kwargs: del kwargs['lr'] # in case we mix schedule and data phases
