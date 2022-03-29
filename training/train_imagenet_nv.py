@@ -19,6 +19,7 @@ import torch.utils.data.distributed
 from fp16util import *
 
 import resnet
+import effnet
 import mesnest
 import copy
 
